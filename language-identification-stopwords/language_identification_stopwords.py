@@ -5,6 +5,7 @@ from tqdm import tqdm
 import pandas as pd
 from tira.rest_api_client import Client
 from tira.third_party_integrations import get_output_directory
+from sklearn.metrics import accuracy_score
 
 if __name__ == "__main__":
 
@@ -78,3 +79,6 @@ if __name__ == "__main__":
     prediction.to_json(
         Path(output_directory) / "predictions.jsonl", orient="records", lines=True
     )
+
+    accuracy = accuracy_score(targets_validation, prediction['lang'])
+    print("Accuracy Score: ", accuracy)
