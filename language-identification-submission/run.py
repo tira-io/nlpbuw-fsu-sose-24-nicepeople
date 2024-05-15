@@ -26,9 +26,6 @@ if __name__ == "__main__":
     df = tira.pd.inputs(
         "nlpbuw-fsu-sose-24", "language-identification-validation-20240429-training"
     )
-    labels = tira.pd.truths(
-        "nlpbuw-fsu-sose-24", "language-identification-validation-20240429-training"
-    )["lang"]
 
     # Load the trained model
     classifier = load(Path(__file__).parent / "model.joblib")
@@ -46,7 +43,3 @@ if __name__ == "__main__":
     df.to_json(
         Path(output_directory) / "predictions.jsonl", orient="records", lines=True
     )
-
-    # Evaluate the model
-    accuracy = accuracy_score(labels, predictions)
-    print("Accuracy Score: ", accuracy)
