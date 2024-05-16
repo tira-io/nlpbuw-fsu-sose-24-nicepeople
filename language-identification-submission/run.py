@@ -35,8 +35,8 @@ if __name__ == "__main__":
 
     # Make predictions
     predictions = classifier.predict(df["text"])
-    df["predicted"] = predictions
-    df = df[["id", "predicted"]]
+    df["lang"] = predictions
+    df = df[["id", "lang"]]
 
     # Save the predictions
     output_directory = get_output_directory(str(Path(__file__).parent))
