@@ -5,6 +5,7 @@ from pathlib import Path
 import scipy.sparse
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from tira.third_party_integrations import get_output_directory
 
 def main():
     try:
@@ -43,9 +44,13 @@ def main():
         predictions = model.predict(X)
         
         # Prepare output
-        output = pd.DataFrame({'id': df.index, 'label': predictions})
-        output_file = Path(__file__).parent / "predictions.jsonl"
-        output.to_json(output_file, orient="records", lines=True)
+        df["lang"] = predictions
+        df = df.reset_index()[["id", "lang"]]  # Reset index to make 'id' a column and select 'id' and 'lang'
+        
+        # Save the predictions
+        output_directory = get_output_directory(str(Path(__file__).parent))
+        output_file = Path(output_directory) / "predictions.jsonl"
+        df.to_json(output_file, orient="records", lines=True)
         
         print(f"Predictions saved to {output_file}")
     except Exception as e:
