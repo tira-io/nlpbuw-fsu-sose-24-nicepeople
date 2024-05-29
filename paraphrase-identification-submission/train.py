@@ -7,28 +7,20 @@ import joblib
 from pathlib import Path
 from feature_engineering import create_features
 
-if __name__ == "_main_":
-    
+if __name__ == "__main__":
     # Load the data
     tira = Client()
-    text = tira.pd.inputs(
-        "nlpbuw-fsu-sose-24", "paraphrase-identification-train-20240515-training"
-    ).set_index("id")
-    labels = tira.pd.truths(
-        "nlpbuw-fsu-sose-24", "paraphrase-identification-train-20240515-training"
-    ).set_index("id")
-
-    # Prepare the data
+    text = tira.pd.inputs("nlpbuw-fsu-sose-24", "paraphrase-identification-train-20240515-training").set_index("id")
+    labels = tira.pd.truths("nlpbuw-fsu-sose-24", "paraphrase-identification-train-20240515-training").set_index("id")
     df = text.join(labels)
     
-    # Combine sentence1 and sentence2 into one feature set
+    # Prepare the data
     sentences1 = df["sentence1"].tolist()
     sentences2 = df["sentence2"].tolist()
     
     # Create features using the updated function
     X, vectorizer = create_features(sentences1, sentences2)
     y = df["label"]
-    
     
     # Split the data into training and validation sets
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
