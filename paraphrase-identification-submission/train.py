@@ -2,10 +2,12 @@ import pandas as pd
 from tira.rest_api_client import Client
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import matthews_corrcoef
 import joblib
 from pathlib import Path
-from feature_engineering import create_features
+import numpy as np
+import scipy.sparse
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 if __name__ == "__main__":
     # Load the data
@@ -18,22 +20,32 @@ if __name__ == "__main__":
     sentences1 = df["sentence1"].tolist()
     sentences2 = df["sentence2"].tolist()
     
-    # Create features using the updated function
+    # Define the function for creating features
+    def create_features(sentences1, sentences2):
+        # Initialize TF-IDF Vectorizer for N-gram features
+        vectorizer = TfidfVectorizer(ngram_range=(1, 3))  # Use 1-grams, 2-grams, and 3-grams
+        tfidf_matrix1 = vectorizer.fit_transform(sentences1)
+        tfidf_matrix2 = vectorizer.transform(sentences2)
+        
+        # Combine TF-IDF features
+        tfidf_features = scipy.sparse.hstack([tfidf_matrix1, tfidf_matrix2])
+        
+        # Calculate cosine similarity
+        cosine_sim = np.array([cosine_similarity(tfidf_matrix1[i], tfidf_matrix2[i])[0][0] for i in range(tfidf_matrix1.shape[0])]).reshape(-1, 1)
+        
+        # Combine all features into a single matrix
+        features = scipy.sparse.hstack([tfidf_features, scipy.sparse.csr_matrix(cosine_sim)])
+        
+        return features, vectorizer
+    
+    # Create features using the defined function
     X, vectorizer = create_features(sentences1, sentences2)
     y = df["label"]
     
-    # Split the data into training and validation sets
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    # Train the logistic regression model
+    # Train the logistic regression model on the full dataset
     model = LogisticRegression(max_iter=1000)
-    model.fit(X_train, y_train)
-    
-    # Evaluate the model on the validation set
-    y_pred = model.predict(X_val)
-    mcc = matthews_corrcoef(y_val, y_pred)
-    print(f"Validation MCC: {mcc}")
+    model.fit(X, y)
     
     # Save the model and vectorizer
-    joblib.dump(model, Path(__file__).parent / "logistic_regression_model.joblib")
-    joblib.dump(vectorizer, Path(__file__).parent / "tfidf_vectorizer.joblib")
+    joblib.dump(model, Path(__file__).parent / "model.joblib")
+    joblib.dump(vectorizer, Path(__file__).parent / "vectorizer.joblib")
