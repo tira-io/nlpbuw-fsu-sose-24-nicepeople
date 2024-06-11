@@ -13,9 +13,8 @@ from pathlib import Path
 from tira.rest_api_client import Client
 from tira.third_party_integrations import get_output_directory
 
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
+# Pre-download NLTK data to avoid runtime issues
+nltk.data.path.append('/usr/local/share/nltk_data')
 
 def preprocess(text):
     stop_words = set(stopwords.words('english'))
