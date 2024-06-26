@@ -1,7 +1,6 @@
 from pathlib import Path
 from tira.rest_api_client import Client
 from tira.third_party_integrations import get_output_directory
-from transformers import pipeline
 
 import json
 from sklearn.model_selection import train_test_split
